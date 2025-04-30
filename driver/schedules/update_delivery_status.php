@@ -1,40 +1,54 @@
 <?php
-include "../../dbcon.php";
 session_start();
+include "../../dbcon.php";
 
-// Allow only employees to access
-if (!isset($_SESSION['user_id']) || strtolower($_SESSION['role']) !== "employee") {
-    header("Location: ../../login.php");
+// Check if logged in and role is driver
+if (!isset($_SESSION['user_id']) || strtolower($_SESSION['role']) !== "driver") {
+    header("Location: ../../unauthorized.php");
+    exit();
+}
+
+if (!isset($_POST['schedule_id']) || !isset($_POST['new_status'])) {
+    $_SESSION['error'] = "Missing required parameters";
+    header("Location: ../schedules.php");
     exit();
 }
 
 $schedule_id = $_POST['schedule_id'];
 $new_status = $_POST['new_status'];
+$driver_id = $_SESSION['driver_id'];
 
-// Update delivery status
-$update = $con->prepare("UPDATE deliveries SET delivery_status = ?, delivery_datetime = NOW() WHERE schedule_id = ?");
-$update->bind_param("si", $new_status, $schedule_id);
-
-if ($update->execute()) {
-    // If status is Completed, return truck to available
-    if ($new_status === "Completed") {
-        $truckUpdate = $con->prepare("
-            UPDATE trucks 
-            SET status = 'available' 
-            WHERE truck_id = (
-                SELECT truck_id FROM schedules WHERE schedule_id = ?
-            )
-        ");
-        $truckUpdate->bind_param("i", $schedule_id);
-        $truckUpdate->execute();
-        $truckUpdate->close();
-    }
-
-    header("Location: ../schedules.php?status_updated=1");
+// Validate status
+$allowed_statuses = ['Pending', 'In Transit', 'Delivered', 'Completed', 'Cancelled'];
+if (!in_array($new_status, $allowed_statuses)) {
+    $_SESSION['error'] = "Invalid status";
+    header("Location: ../schedules.php");
     exit();
-} else {
-    echo "Error updating status: " . $update->error;
 }
 
-$update->close();
-$con->close();
+// First verify this schedule belongs to the logged-in driver
+$verifyQuery = $con->prepare("SELECT schedule_id FROM schedules WHERE schedule_id = ? AND driver_id = ?");
+$verifyQuery->bind_param("ii", $schedule_id, $driver_id);
+$verifyQuery->execute();
+$verifyResult = $verifyQuery->get_result();
+
+if ($verifyResult->num_rows === 0) {
+    $_SESSION['error'] = "Schedule not found or not authorized";
+    header("Location: ../schedules.php");
+    exit();
+}
+
+// Insert new delivery status record
+$insertQuery = $con->prepare("INSERT INTO deliveries (schedule_id, delivery_status) VALUES (?, ?)");
+$insertQuery->bind_param("is", $schedule_id, $new_status);
+
+if ($insertQuery->execute()) {
+    $_SESSION['success'] = "Delivery status updated successfully";
+} else {
+    $_SESSION['error'] = "Failed to update delivery status: " . $con->error;
+}
+
+// Redirect back to schedules page
+header("Location: ../schedules.php");
+exit();
+?>
