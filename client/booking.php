@@ -82,9 +82,7 @@ $bookingsQuery = $con->prepare("
     SELECT s.schedule_id, s.start_time, s.end_time, s.destination, s.pick_up, s.distance_km, 
            t.truck_no, t.truck_id,
            (SELECT delivery_status FROM deliveries WHERE schedule_id = s.schedule_id ORDER BY delivery_id DESC LIMIT 1) AS delivery_status,
-           (SELECT delivery_id FROM deliveries WHERE schedule_id = s.schedule_id ORDER BY delivery_id DESC LIMIT 1) AS delivery_id,
-           (SELECT total_amount FROM payments WHERE schedule_id = s.schedule_id ORDER BY payment_id DESC LIMIT 1) AS total_amount,
-           (SELECT status FROM payments WHERE schedule_id = s.schedule_id ORDER BY payment_id DESC LIMIT 1) AS payment_status
+           (SELECT delivery_id FROM deliveries WHERE schedule_id = s.schedule_id ORDER BY delivery_id DESC LIMIT 1) AS delivery_id
     FROM schedules s
     JOIN trucks t ON s.truck_id = t.truck_id
     WHERE s.customer_id = ?
@@ -207,7 +205,6 @@ $prefill_date = $_GET['date'] ?? '';
               <th>Distance</th>
               <th>Truck</th>
               <th>Delivery Status</th>
-              <th>Payment Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -231,43 +228,26 @@ $prefill_date = $_GET['date'] ?? '';
                   </span>
                 </td>
                 <td>
-                  <span class="badge <?= ($row['payment_status'] ?? 'Pending') == 'Paid' ? 'bg-success' : 'bg-warning text-dark' ?>">
-                    <?= htmlspecialchars($row['payment_status'] ?? 'Pending') ?>
-                  </span>
-                </td>
-                <td>
                   <div class="d-flex gap-2 flex-wrap">
-                    <?php if ($row['payment_status'] === 'Paid'): ?>
-                      <span class="text-success">Paid (₱<?= number_format($row['total_amount'], 2) ?>)</span>
-                    <?php else: ?>
-                      <form method="POST" action="booking/pay_now.php" class="mb-0">
-                        <input type="hidden" name="schedule_id" value="<?= $row['schedule_id'] ?>">
-                        <input type="hidden" name="amount" value="<?= $row['total_amount'] ?>">
-                        <button type="submit" class="btn btn-sm btn-success">
-                          <i class="bi bi-credit-card"></i> Pay ₱<?= number_format($row['total_amount'], 2) ?>
-                        </button>
-                      </form>
-                    <?php endif; ?>
-
-                    <?php if (new DateTime($row['start_time']) > new DateTime()): ?>
+                    <?php 
+                    $status = $row['delivery_status'] ?? 'Pending';
+                    
+                    // Only show cancel button if status is "Pending"
+                    if ($status === 'Pending'): ?>
                       <form method="POST" action="booking/cancel_booking.php" class="mb-0" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
                         <input type="hidden" name="schedule_id" value="<?= $row['schedule_id'] ?>">
                         <button type="submit" class="btn btn-sm btn-danger">
                           <i class="bi bi-x-circle"></i> Cancel
                         </button>
                       </form>
-                    <?php else: ?>
-                      <button class="btn btn-sm btn-secondary" disabled>
-                        <i class="bi bi-x-circle"></i> Cannot Cancel
-                      </button>
                     <?php endif; ?>
 
-                    <?php if ($row['delivery_status'] === 'Delivered'): ?>
+                    <?php if ($status === 'Delivered'): ?>
                       <button class="btn btn-sm btn-primary confirm-delivery"
                         data-schedule-id="<?= $row['schedule_id'] ?>">
                         <i class="bi bi-check-circle"></i> Confirm Receipt
                       </button>
-                    <?php elseif ($row['delivery_status'] === 'Received'): ?>
+                    <?php elseif ($status === 'Received'): ?>
                       <span class="text-success"><i class="bi bi-check2-circle"></i> Received</span>
                     <?php endif; ?>
                   </div>

@@ -486,6 +486,415 @@
             border-radius: 8px;
             padding: 10px 20px;
         }
+        #calendar {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border-radius: 3px;
+        }
+
+        .event-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        
+        .event-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .event-date {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+        
+        .event-trucks {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .event-truck-list {
+            margin-top: 10px;
+            padding-left: 15px;
+        }
+        
+        .event-truck-type {
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        
+        .event-list {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .tab-button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            background-color: #f0f0f0;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .tab-button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        #list-view, #calendar-view {
+            display: none;
+        }
+        
+        .active-view {
+            display: block !important;
+        }
+        
+        .all-full-message {
+            text-align: center;
+            margin: 40px 0;
+            color: #777;
+            font-style: italic;
+        }
+        
+        /* Tooltip styling for calendar */
+        .fc-event-title {
+            font-weight: bold;
+        }
+        
+        .tooltip {
+            position: absolute;
+            z-index: 1000;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 300px;
+            display: none;
+        }
+        
+        .tooltip-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        
+        .tooltip-content {
+            font-size: 0.9em;
+        }
+        
+        .truck-type-group {
+            margin-top: 8px;
+        }
+        
+        .truck-type-title {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .filter-controls {
+            max-width: 1100px;
+            margin: 0 auto 20px auto;
+            padding: 0 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        select.filter-select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .filter-label {
+            font-weight: 600;
+        }
+        
+        /* Calendar day styling */
+        .fc-day-future {
+            background-color: #fafafa;
+        }
+        
+        .fc-day-today {
+            background-color: #e8f4ff !important;
+        }
+        
+        .no-availability {
+            background-color: #f5f5f5;
+            color: #999;
+            font-style: italic;
+        }
+        /* Add these styles to your CSS file */
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('../assets/images/delivery-banner.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 100px 0;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.hero-section h1 {
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.hero-section .btn {
+    margin-top: 20px;
+    padding: 10px 30px;
+    font-weight: 600;
+}
+
+/* Glass Effect */
+.glass {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    padding: 25px;
+    transition: all 0.3s ease;
+}
+
+.glass:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Info Card */
+.info-card {
+    margin-bottom: 30px;
+}
+
+.info-card .card-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+}
+
+.info-card h2 {
+    font-weight: 600;
+    color: #343a40;
+    margin-bottom: 10px;
+}
+
+.tagline {
+    font-style: italic;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.info-item {
+    padding: 10px 0;
+    font-size: 18px;
+}
+
+.info-item i {
+    color: #0d6efd;
+    margin-right: 10px;
+}
+
+/* Section Titles */
+.section-title {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+    font-weight: 700;
+    color: #343a40;
+}
+
+.section-title:after {
+    content: '';
+    position: absolute;
+    width: 50px;
+    height: 3px;
+    background: #0d6efd;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Service Cards */
+.service-card {
+    text-align: center;
+    padding: 30px 20px;
+    height: 100%;
+}
+
+.service-card .icon-wrapper {
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    font-size: 40px;
+    background: rgba(13, 110, 253, 0.1);
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    color: #0d6efd;
+}
+
+.service-card h3 {
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* Feature Cards */
+.feature-card {
+    padding: 25px;
+    height: 100%;
+}
+
+.feature-card i {
+    font-size: 40px;
+    color: #0d6efd;
+    margin-bottom: 15px;
+}
+
+.feature-card h3 {
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* Testimonial Cards */
+.testimonial-card {
+    padding: 30px;
+    height: 100%;
+}
+
+.testimonial-content {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.testimonial-content i {
+    font-size: 30px;
+    color: #0d6efd;
+    opacity: 0.3;
+    position: absolute;
+    top: -10px;
+    left: -10px;
+}
+
+.testimonial-content p {
+    position: relative;
+    padding-left: 20px;
+    font-style: italic;
+}
+
+.testimonial-author h4 {
+    margin-bottom: 5px;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.testimonial-author p {
+    color: #6c757d;
+    margin: 0;
+}
+
+/* CTA Section */
+.cta-section {
+    background: linear-gradient(45deg, #0d6efd, #0b5ed7);
+    color: white;
+    border-radius: 10px;
+}
+
+.cta-section h2 {
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.cta-buttons {
+    margin-top: 25px;
+}
+
+.cta-buttons .btn-outline-primary {
+    color: white;
+    border-color: white;
+}
+
+.cta-buttons .btn-outline-primary:hover {
+    background-color: white;
+    color: #0d6efd;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 60px 0;
+    }
+    
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .info-item {
+        font-size: 16px;
+    }
+    
+    .cta-buttons .btn {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+    }
+}
     </style>
 </head>
 

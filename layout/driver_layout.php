@@ -308,6 +308,7 @@
             color: #666;
             font-size: 0.95rem;
         }
+
         /* Profile-specific styles (taking precedence where duplicates exist) */
         .profile-card {
             border-radius: 15px;
@@ -378,6 +379,144 @@
         .btn-secondary {
             border-radius: 8px;
             padding: 10px 20px;
+        }
+
+        .filter-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .filter-column {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+        }
+
+        .filter-column label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .filter-column select,
+        .filter-column input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .filter-btn,
+        .reset-btn {
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .filter-btn {
+            background-color: #364C84;
+            color: white;
+            border: none;
+        }
+
+        .reset-btn {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .status-scheduled {
+            background-color: #eee;
+        }
+
+        .status-pending {
+            background-color: #fff9c4;
+        }
+
+        .status-in-transit {
+            background-color: #bbdefb;
+        }
+
+        .status-delivered {
+            background-color: #c8e6c9;
+        }
+
+        .status-completed {
+            background-color: #c8e6c9;
+        }
+
+        .status-cancelled {
+            background-color: #ffcdd2;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Add these styles to your existing CSS */
+        .fixed-header {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
         }
     </style>
 </head>

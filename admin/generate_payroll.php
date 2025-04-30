@@ -24,27 +24,51 @@ $alert_class = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['month'], $_POST['year'])) {
     $month = $_POST['month'];
     $year = $_POST['year'];
+    $pay_period = $year . '-' . $month;
 
-    // Calculate exact date range for the selected month/year
+    // Calculate exact date range
     $start_date = date('Y-m-01', strtotime("$year-$month-01"));
     $end_date = date('Y-m-t', strtotime("$year-$month-01"));
 
-    // Enable error reporting
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
     try {
         $con->begin_transaction();
 
-        // 1. Check for existing payroll for this period (both driver and helper)
-        $check_driver = $con->prepare("SELECT payroll_id FROM payroll 
-                               WHERE pay_period_start = ? AND pay_period_end = ?");
+        // Get payroll settings
+        $settings = null;
+        $settings_query = $con->prepare("SELECT * FROM payroll_settings WHERE pay_period = ?");
+        $settings_query->bind_param("s", $pay_period);
+        $settings_query->execute();
+        $settings_result = $settings_query->get_result();
+        
+        if ($settings_result->num_rows > 0) {
+            $settings = $settings_result->fetch_assoc();
+        } else {
+            $most_recent_query = $con->prepare("
+                SELECT * FROM payroll_settings 
+                WHERE pay_period < ? 
+                ORDER BY pay_period DESC LIMIT 1
+            ");
+            $most_recent_query->bind_param("s", $pay_period);
+            $most_recent_query->execute();
+            $most_recent_result = $most_recent_query->get_result();
+            
+            if ($most_recent_result->num_rows > 0) {
+                $settings = $most_recent_result->fetch_assoc();
+            } else {
+                throw new Exception("No payroll settings found. Please configure settings first.");
+            }
+        }
+
+        // Check for existing payroll
+        $check_driver = $con->prepare("SELECT payroll_id FROM payroll WHERE pay_period_start = ? AND pay_period_end = ?");
         $check_driver->bind_param("ss", $start_date, $end_date);
         $check_driver->execute();
         $check_driver_result = $check_driver->get_result();
         $check_driver->close();
 
-        $check_helper = $con->prepare("SELECT payroll_id FROM helper_payroll 
-                               WHERE pay_period_start = ? AND pay_period_end = ?");
+        $check_helper = $con->prepare("SELECT payroll_id FROM helper_payroll WHERE pay_period_start = ? AND pay_period_end = ?");
         $check_helper->bind_param("ss", $start_date, $end_date);
         $check_helper->execute();
         $check_helper_result = $check_helper->get_result();
@@ -54,19 +78,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['month'], $_POST['year
             throw new Exception("Payroll already exists for " . date('F Y', strtotime($start_date)));
         }
 
-        // 2. Get all drivers with their completed deliveries and truck information
+        // Get settings with proper column names
+        $driver_base_salary = $settings['driver_base_salary'] ?? 0;
+        $helper_base_salary = $settings['helper_base_salary'] ?? 0;
+        $helper_commission_rate = 0.05;
+        
+        $sss_deduction = $settings['sss_rate'] ?? 0;
+        $philhealth_deduction = $settings['philhealth_rate'] ?? 0;
+        $pagibig_deduction = $settings['pagibig_rate'] ?? 0;
+        $maintenance_per_delivery = $settings['truck_maintenance_deduction'] ?? 0;
+        
+        $wheeler_rates = [
+            6 => $settings['rate_6w'] ?? 0,
+            8 => $settings['rate_8w'] ?? 0,
+            10 => $settings['rate_10w'] ?? 0,
+            12 => $settings['rate_12w'] ?? 0
+        ];
+
+        // Get drivers with deliveries
         $driver_query = $con->prepare("
-            SELECT 
-                d.driver_id, 
-                d.full_name,
-                t.truck_type,
-                COUNT(del.delivery_id) as completed_deliveries,
-                COALESCE(SUM(s.distance_km), 0) as total_distance_km
+            SELECT d.driver_id, d.full_name, t.truck_type,
+                   COUNT(del.delivery_id) as completed_deliveries,
+                   COALESCE(SUM(s.distance_km), 0) as total_distance_km
             FROM drivers d
             LEFT JOIN schedules s ON s.driver_id = d.driver_id
             LEFT JOIN trucks t ON t.truck_id = s.truck_id
             LEFT JOIN deliveries del ON del.schedule_id = s.schedule_id
-                AND del.delivery_status = 'Completed'
+                AND del.delivery_status = 'Received'
                 AND del.delivery_datetime BETWEEN ? AND ?
             GROUP BY d.driver_id
         ");
@@ -74,45 +112,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['month'], $_POST['year
         $driver_query->execute();
         $drivers = $driver_query->get_result();
 
-         // 3. Get all helpers with their completed deliveries and total revenue
-         $helper_query = $con->prepare("
-         SELECT 
-             h.helper_id, 
-             h.full_name,
-             COUNT(del.delivery_id) as completed_deliveries,
-             COALESCE(SUM(py.total_amount), 0) as delivery_revenue
-         FROM helpers h
-         LEFT JOIN schedules s ON s.helper_id = h.helper_id
-         LEFT JOIN deliveries del ON del.schedule_id = s.schedule_id
-             AND del.delivery_status = 'Completed'
-             AND del.delivery_datetime BETWEEN ? AND ?
-         LEFT JOIN payments py ON py.schedule_id = s.schedule_id
-         GROUP BY h.helper_id
+        // Get helpers with deliveries
+        $helper_query = $con->prepare("
+            SELECT h.helper_id, h.full_name,
+                   COUNT(del.delivery_id) as completed_deliveries,
+                   COALESCE(SUM(py.total_amount), 0) as delivery_revenue
+            FROM helpers h
+            LEFT JOIN schedules s ON s.helper_id = h.helper_id
+            LEFT JOIN deliveries del ON del.schedule_id = s.schedule_id
+                AND del.delivery_status = 'Received'
+                AND del.delivery_datetime BETWEEN ? AND ?
+            LEFT JOIN payments py ON py.schedule_id = s.schedule_id
+            GROUP BY h.helper_id
         ");
         $helper_query->bind_param("ss", $start_date, $end_date);
         $helper_query->execute();
         $helpers = $helper_query->get_result();
 
-        // 4. Salary configuration
-        $driver_base_salary = 8000.00;
-        $helper_base_salary = 5000.00;
-        $helper_commission_rate = 0.10;
-        // Rate per km based on wheeler count
-        $wheeler_rates = [
-            6 => 15.00,   // ₱15 per km for 6-wheeler
-            8 => 20.00,   // ₱20 per km for 8-wheeler
-            10 => 25.00,  // ₱25 per km for 10-wheeler
-            12 => 30.00   // ₱30 per km for 12-wheeler
-        ];
-
-        // 5. Prepare payroll insert statements
+        // Prepare payroll insert statements
         $insert_driver = $con->prepare("
             INSERT INTO payroll (
                 driver_id, pay_period_start, pay_period_end, total_deliveries,
                 base_salary, bonuses, sss_deduction, philhealth_deduction,
                 pagibig_deduction, truck_maintenance, tax_deduction, deductions,
                 net_pay, date_generated, payment_status, delivery_revenue
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'Pending', ? )
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'Pending', ?)
         ");
 
         $insert_helper = $con->prepare("
@@ -126,42 +150,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['month'], $_POST['year
         $processed_drivers = 0;
         $processed_helpers = 0;
 
-        // 6. Process each driver's payroll
+        // Process each driver
         while ($driver = $drivers->fetch_assoc()) {
             $deliveries = $driver['completed_deliveries'];
             $distance = $driver['total_distance_km'];
             
-            // Extract wheeler count from truck_type (e.g., "10 wheelers" -> 10)
-            $wheeler_count = 6; // default if not found
+            $wheeler_count = 6;
             if (preg_match('/(\d+)\s*wheelers?/i', $driver['truck_type'], $matches)) {
                 $wheeler_count = (int)$matches[1];
             }
             
-            // Get the rate based on wheeler count
             $rate_per_km = $wheeler_rates[$wheeler_count] ?? $wheeler_rates[6];
-            
-            // Calculate distance earnings
             $distance_earnings = $distance * $rate_per_km;
-
-            // Fixed deductions (Philippine rates)
-            $sss = 581.30;        // Fixed SSS contribution
-            $philhealth = 450.00; // Fixed PhilHealth
-            $pagibig = 100.00;    // Fixed Pag-IBIG
-
-            // Maintenance fee (₱500 per delivery)
-            $truck_fee = $deliveries * 500;
-
-            // Tax calculation (progressive)
+        
             $taxable_income = $driver_base_salary + $distance_earnings;
             $tax = calculateTax($taxable_income);
-
-            // Total deductions
-            $total_deductions = $sss + $philhealth + $pagibig + $truck_fee + $tax;
-
-            // Calculate net pay
+        
+            // Calculate maintenance fee first
+            $maintenance_fee = $deliveries * $maintenance_per_delivery;
+            $total_deductions = $sss_deduction + $philhealth_deduction + $pagibig_deduction + $maintenance_fee + $tax;
+        
             $net_pay = ($driver_base_salary + $distance_earnings) - $total_deductions;
-
-            // Insert driver payroll record
+        
             $insert_driver->bind_param(
                 "issidddddddddd",
                 $driver['driver_id'],
@@ -169,44 +179,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['month'], $_POST['year
                 $end_date,
                 $deliveries,
                 $driver_base_salary,
-                $distance_earnings, // Stored in bonuses field
-                $sss,
-                $philhealth,
-                $pagibig,
-                $truck_fee,
+                $distance_earnings,
+                $sss_deduction,
+                $philhealth_deduction,
+                $pagibig_deduction,
+                $maintenance_fee,  // Now using the variable
                 $tax,
                 $total_deductions,
                 $net_pay,
-                $distance_earnings// Stored in delivery_revenue field
+                $distance_earnings
             );
             $insert_driver->execute();
             $processed_drivers++;
         }
-        $driver_query->close();
-        $insert_driver->close();
 
-        // 7. Process each helper's payroll
+        // Process each helper
         while ($helper = $helpers->fetch_assoc()) {
             $deliveries = $helper['completed_deliveries'];
             $revenue = $helper['delivery_revenue'];
-
-            // Calculate commission (10% of delivery revenue)
             $commission = $revenue * $helper_commission_rate;
 
-            // Fixed deductions (Philippine rates)
-            $sss = 581.30;        // Fixed SSS contribution
-            $philhealth = 450.00; // Fixed PhilHealth
-            $pagibig = 100.00;    // Fixed Pag-IBIG
-
-            
-
-            // Total deductions
-            $total_deductions = $sss + $philhealth + $pagibig;
-
-            // Calculate net pay
+            $total_deductions = $sss_deduction + $philhealth_deduction + $pagibig_deduction;
             $net_pay = ($helper_base_salary + $commission) - $total_deductions;
 
-            // Insert helper payroll record
             $insert_helper->bind_param(
                 "issiddddddd",
                 $helper['helper_id'],
@@ -215,16 +210,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['month'], $_POST['year
                 $deliveries,
                 $helper_base_salary,
                 $commission,
-                $sss,
-                $philhealth,
-                $pagibig,
+                $sss_deduction,
+                $philhealth_deduction,
+                $pagibig_deduction,
                 $total_deductions,
                 $net_pay
             );
             $insert_helper->execute();
             $processed_helpers++;
         }
+
+        $driver_query->close();
         $helper_query->close();
+        $insert_driver->close();
         $insert_helper->close();
 
         $con->commit();
@@ -240,11 +238,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['month'], $_POST['year
     }
 }
 
-// Philippine tax calculation function
-function calculateTax($monthly_income)
-{
+function calculateTax($monthly_income) {
     $annual = $monthly_income * 12;
-
     if ($annual <= 250000) return 0;
     elseif ($annual <= 400000) return ($annual - 250000) * 0.15 / 12;
     elseif ($annual <= 800000) return (22500 + ($annual - 400000) * 0.20) / 12;
@@ -253,6 +248,7 @@ function calculateTax($monthly_income)
     else return (2202500 + ($annual - 8000000) * 0.35) / 12;
 }
 ?>
+
 <div class="container-fluid">
     <h1 class="mb-4">Generate Payroll</h1>
 
@@ -261,8 +257,11 @@ function calculateTax($monthly_income)
     <?php endif; ?>
 
     <div class="card shadow">
-        <div class="card-header py-3">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h5 class="m-0 font-weight-bold">Select Payroll Period</h5>
+            <a href="payroll_config.php" class="btn btn-sm btn-outline-light">
+                <i class="bi bi-gear"></i> Configure Settings
+            </a>
         </div>
         <div class="card-body">
             <form method="POST">
@@ -273,18 +272,10 @@ function calculateTax($monthly_income)
                             <select class="form-control" id="monthSelect" name="month" required>
                                 <?php
                                 $months = [
-                                    '01' => 'January',
-                                    '02' => 'February',
-                                    '03' => 'March',
-                                    '04' => 'April',
-                                    '05' => 'May',
-                                    '06' => 'June',
-                                    '07' => 'July',
-                                    '08' => 'August',
-                                    '09' => 'September',
-                                    '10' => 'October',
-                                    '11' => 'November',
-                                    '12' => 'December'
+                                    '01' => 'January', '02' => 'February', '03' => 'March',
+                                    '04' => 'April', '05' => 'May', '06' => 'June',
+                                    '07' => 'July', '08' => 'August', '09' => 'September',
+                                    '10' => 'October', '11' => 'November', '12' => 'December'
                                 ];
                                 foreach ($months as $num => $name) {
                                     $selected = (date('m') == $num) ? 'selected' : '';
