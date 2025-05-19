@@ -2,12 +2,21 @@
 session_start();
 include '../../dbcon.php';
 
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'customer') {
     header("Location: ../login.php");
     exit();
 }
 
-// Get customer_id
+if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+    header("Location: ../booking.php?error=invalid_csrf");
+    exit();
+}
+
+if ($_SESSION['account_status'] !== 'Active') {
+    header("Location: ../booking.php?error=account_inactive");
+    exit();
+}
+
 $customerQuery = $con->prepare("SELECT customer_id FROM customers WHERE user_id = ?");
 $customerQuery->bind_param("i", $_SESSION['user_id']);
 $customerQuery->execute();
@@ -33,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $destination = $con->real_escape_string($_POST['destination']);
     $distance_km = (float)$_POST['distance_km'];
 
-    // Cost calculation
     $base_rate = 10000;
     $extra_charge = ($distance_km > 30) ? ceil(($distance_km - 30) / 10) * 5000 : 0;
     $total_cost = $base_rate + $extra_charge;
@@ -73,12 +81,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $insertDelivery->bind_param("i", $schedule_id);
         $insertDelivery->execute();
 
+        $updateActivity = $con->prepare("UPDATE users SET last_activity = NOW() WHERE user_id = ?");
+        $updateActivity->bind_param("i", $_SESSION['user_id']);
+        $updateActivity->execute();
+        $updateActivity->close();
+
         $con->commit();
-        header("Location: ../booking.php?success=1");
+        $_SESSION['confirmation_message'] = "Booking submitted successfully!";
+        header("Location: ../booking.php");
     } catch (Exception $e) {
         $con->rollback();
-        error_log("Booking error: " . $e->getMessage());
-        header("Location: ../booking.php?error=booking_failed&message=" . urlencode($e->getMessage()));
+        $_SESSION['error_message'] = "Booking failed: " . $e->getMessage();
+        header("Location: ../booking.php");
     }
+} else {
+    header("Location: ../booking.php");
 }
-$con->close();
+?>

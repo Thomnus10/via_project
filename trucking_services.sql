@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 30, 2025 at 10:26 PM
+-- Generation Time: May 24, 2025 at 12:40 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -46,7 +46,8 @@ INSERT INTO `account_requests` (`id`, `full_name`, `email`, `contact_number`, `u
 (2, 'Christian Jose', 'christianski666@gmail.com', '1231230123', 'zenra', '2025-04-21 08:38:40', 'approved'),
 (4, 'afasfq3asfa', 'rocky.adaya101@gmail.com', '1231231241', 'rocky211', '2025-04-21 09:31:33', 'approved'),
 (7, 'owin', 'o.albacite.546189@umindanao.edu.ph', '019231313131', 'sample', '2025-04-24 04:26:43', 'approved'),
-(8, 'ivycarl', 'ivycarl.benjamin01@gmail.com', '09096570733', 'ivy', '2025-04-24 16:19:38', 'approved');
+(8, 'ivycarl', 'ivycarl.benjamin01@gmail.com', '09096570733', 'ivy', '2025-04-24 16:19:38', 'approved'),
+(9, 'anaia zureriel', 'judithkimmarie_marbascias@sjp2cd.edu.ph', '00403435453', 'anya', '2025-05-09 22:21:04', 'approved');
 
 -- --------------------------------------------------------
 
@@ -97,7 +98,8 @@ INSERT INTO `customers` (`customer_id`, `full_name`, `contact_no`, `address`, `u
 (14, 'afasfq3asfa', '09123456789', 'Sample Address', 46, 'rocky.adaya101@gmail.com'),
 (16, 'owin albacite', '09123456789', 'Sample Address', 48, 'oalbacite@gmail.com'),
 (17, 'owin', '09123456789', 'Sample Address', 49, 'o.albacite.546189@umindanao.edu.ph'),
-(18, 'ivycarl', '09123456789', 'Sample Address', 60, 'ivycarl.benjamin01@gmail.com');
+(18, 'ivycarl', '09123456789', 'Sample Address', 60, 'ivycarl.benjamin01@gmail.com'),
+(19, 'anaia zureriel', '09123456789', 'Sample Address', 62, 'judithkimmarie_marbascias@sjp2cd.edu.ph');
 
 -- --------------------------------------------------------
 
@@ -149,7 +151,14 @@ INSERT INTO `deliveries` (`delivery_id`, `schedule_id`, `delivery_status`, `deli
 (29, 28, 'Received', '2025-05-03 07:00:00', '2025-05-03 11:15:00'),
 (30, 29, 'Received', '2025-05-04 06:00:00', '2025-05-04 10:05:00'),
 (31, 30, 'Received', '2025-05-05 08:00:00', '2025-05-05 12:30:00'),
-(32, 32, 'Received', '2025-05-01 03:19:35', NULL);
+(32, 32, 'Received', '2025-05-01 03:19:35', NULL),
+(33, 33, 'Accepted', '2025-05-24 15:08:03', NULL),
+(34, 34, 'Pending', '2025-05-24 17:50:42', NULL),
+(35, 35, 'Pending', '2025-05-24 17:57:01', NULL),
+(36, 36, 'Pending', '2025-05-24 17:57:44', NULL),
+(37, 36, 'Cancelled', '2025-05-24 17:57:54', NULL),
+(38, 37, 'Pending', '2025-05-24 18:04:18', NULL),
+(39, 37, 'Cancelled', '2025-05-24 18:04:25', NULL);
 
 -- --------------------------------------------------------
 
@@ -248,7 +257,7 @@ CREATE TABLE `payments` (
   `payment_id` int(11) NOT NULL,
   `schedule_id` int(11) NOT NULL,
   `total_amount` decimal(10,2) NOT NULL DEFAULT 5000.00,
-  `status` enum('Pending','Paid') DEFAULT 'Paid',
+  `status` enum('Pending','Paid','Refunded','Cancelled') DEFAULT 'Paid',
   `date` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -288,7 +297,12 @@ INSERT INTO `payments` (`payment_id`, `schedule_id`, `total_amount`, `status`, `
 (29, 28, 20000.00, 'Paid', '2025-05-03 06:30:00'),
 (30, 29, 17500.00, 'Paid', '2025-05-04 05:30:00'),
 (31, 30, 40000.00, 'Paid', '2025-05-05 07:30:00'),
-(32, 32, 20000.00, 'Paid', '2025-05-01 03:46:07');
+(32, 32, 20000.00, 'Paid', '2025-05-01 03:46:07'),
+(33, 33, 20000.00, 'Pending', '2025-05-24 14:43:14'),
+(34, 34, 25000.00, 'Pending', '2025-05-24 17:50:42'),
+(35, 35, 15000.00, 'Pending', '2025-05-24 17:57:01'),
+(36, 36, 10000.00, 'Cancelled', '2025-05-24 17:57:44'),
+(37, 37, 25000.00, 'Cancelled', '2025-05-24 18:04:18');
 
 -- --------------------------------------------------------
 
@@ -416,7 +430,12 @@ INSERT INTO `schedules` (`schedule_id`, `start_time`, `end_time`, `destination`,
 (28, '2025-05-02 09:00:00', '2025-05-02 13:00:00', 'Balanga City, Bataan', 'Pandi, Bulacan', 5, 1, 5, 5, 35.00),
 (29, '2025-05-03 07:00:00', '2025-05-03 11:00:00', 'San Jose City, Nueva Ecija', 'Bulakan, Bulacan', 5, 1, 5, 5, 50.00),
 (30, '2025-05-04 06:00:00', '2025-05-04 10:00:00', 'Biñan City, Laguna', 'Bustos, Bulacan', 5, 1, 5, 5, 45.00),
-(32, '2025-05-05 06:00:00', '2025-05-05 18:00:00', 'sample', 'sample', 1, 1, 1, 1, 50.00);
+(32, '2025-05-05 06:00:00', '2025-05-05 18:00:00', 'sample', 'sample', 1, 1, 1, 1, 50.00),
+(33, '2025-05-24 06:00:00', '2025-05-24 18:00:00', 'doon', 'dito ', 1, 1, 1, 1, 50.00),
+(34, '2025-05-24 06:00:00', '2025-05-24 18:00:00', 'doon', 'dito ', 2, 1, 2, 2, 56.00),
+(35, '2025-05-24 06:00:00', '2025-05-24 18:00:00', 'saan', 'dito ', 3, 1, 3, 3, 40.00),
+(36, '2025-06-07 06:00:00', '2025-06-07 18:00:00', 'fafafafaf', 'afafaf', 4, 1, 4, 4, 20.00),
+(37, '2025-06-06 06:00:00', '2025-06-06 18:00:00', 'last test', 'test last', 5, 1, 5, 5, 60.00);
 
 -- --------------------------------------------------------
 
@@ -438,11 +457,11 @@ CREATE TABLE `trucks` (
 --
 
 INSERT INTO `trucks` (`truck_id`, `truck_no`, `truck_type`, `status`, `driver_id`, `helper_id`) VALUES
-(1, 'TRK-2024-01', '10 wheelers', 'Available', 1, 1),
-(2, 'TRK-2024-02', '12 wheelers', 'Available', 2, 2),
-(3, 'TRK-2024-03', '8 wheelers', 'Available', 3, 3),
-(4, 'TRK-2024-04', '10 wheelers', 'Available', 4, 4),
-(5, 'TRK-2024-05', '6 wheelers', 'Available', 5, 5);
+(1, 'TRK-2024-01', '10 wheelers', 'Booked', 1, 1),
+(2, 'TRK-2024-02', '12 wheelers', 'Booked', 2, 2),
+(3, 'TRK-2024-03', '8 wheelers', 'Booked', 3, 3),
+(4, 'TRK-2024-04', '10 wheelers', 'Booked', 4, 4),
+(5, 'TRK-2024-05', '6 wheelers', 'Booked', 5, 5);
 
 -- --------------------------------------------------------
 
@@ -454,33 +473,36 @@ CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `role` enum('admin','customer','driver','helper') NOT NULL
+  `role` enum('admin','customer','driver','helper') NOT NULL,
+  `account_status` enum('Active','Inactive','Disabled') DEFAULT 'Active',
+  `last_activity` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `username`, `password`, `role`) VALUES
-(4, 'admin', '$2y$10$20ETT6CiIF7MZkCQEj71c.g0QPMoyV5Fs.KTF8SgfTEL2zaZfVxhS', 'admin'),
-(11, 'client', '$2y$10$M891800fSQhN/cIvA7bRD.eHdO0vppdBMNu3WDz.17YWi/l9vqcF6', 'customer'),
-(12, 'client2', '$2y$10$M891800fSQhN/cIvA7bRD.eHdO0vppdBMNu3WDz.17YWi/l9vqcF6', 'customer'),
-(15, 'driver', '$2y$10$VI0UvUzMrExjNSv37E7GXOTzL2caSUCgj4Mt.aS0U1LItLXoaX62C', 'driver'),
-(16, 'driver2', '$2y$10$gQNXpo7Zlu22fJz/nRfobe6y2eISpZdsP5TEfG67uo45gqgkUoSuy', 'driver'),
-(17, 'test', '$2y$10$3PGkL6yBH5ZMmtnsaSfxVuWiAL5nbT/s8n69WxMB.W.M/TL/gPKNu', 'customer'),
-(18, 'helper', '$2y$10$5xzVaTuka17WqMCT/au8I.4T023ag4.RAIoi2uErKPq1sxxVVjQQC', 'helper'),
-(19, 'helper2', '$2y$10$5xzVaTuka17WqMCT/au8I.4T023ag4.RAIoi2uErKPq1sxxVVjQQC', 'helper'),
-(20, 'driver3', '$2y$10$zO0tBCm4jilKwTZQwzZ3yO96qxJEg64BlbLLJ9SsK5/5hbv5JarJi', 'driver'),
-(21, 'driver4', '$2y$10$Ta.PaS1stoiXA2ddUYosheIp0P5Ugd576JTlkVEIurn4Cm6knD30S', 'driver'),
-(22, 'driver5', '$2y$10$SLsPFs3oNn/rTCBl.6JOMuxZX/Z.ttkkCLkyO5v7gex6i2yVY9v92', 'driver'),
-(23, 'helper3', '$2y$10$10Gc5eQzDi/UYdIyXyZ8KORahuWy1K2ThZR9wsN4DZIsmBIrJ7tty', 'helper'),
-(24, 'helper4', '$2y$10$PU3VqlQh6zXPv9wjGThj3OCjgE8PUXawrbwS/V9y7mKhLcDrODY/.', 'helper'),
-(25, 'helper5', '$2y$10$ShFaUqVyyMDi37mPX0Oj1ubdzKRELtgs1L5qIkZWspqpJffBycKdi', 'helper'),
-(41, 'zenra', '$2y$10$Kq9fnlPQ1xmMi1WwIULTUuSrxkbGNz7gjSNEvjGZpL/wpqnp3H3yi', 'customer'),
-(46, 'rocky211', '$2y$10$ftPFp4hqPV5ZQh9W/iIRZuvMjUqifk8aidxsJ.8DaD/22zJopuRBe', 'customer'),
-(48, 'owin', '$2y$10$RVpF.foscWj.7emKsXzAMuCgXJhDLpf8/YQRAgJh0wkO4bMjqp2K2', 'customer'),
-(49, 'sample', '$2y$10$I8lxS/O92DFhvzNK7nSsWuzevjT4Ktgz.CpZIftqVajOWlsbb2aia', 'customer'),
-(60, 'ivy', '$2y$10$vbiyTwYFCeNN1poY/IXV0u8WWMLeCitdRGm0Op2.rGH7udacoEjCW', 'customer');
+INSERT INTO `users` (`user_id`, `username`, `password`, `role`, `account_status`, `last_activity`) VALUES
+(4, 'admin', '$2y$10$20ETT6CiIF7MZkCQEj71c.g0QPMoyV5Fs.KTF8SgfTEL2zaZfVxhS', 'admin', 'Active', NULL),
+(11, 'client', '$2y$10$M891800fSQhN/cIvA7bRD.eHdO0vppdBMNu3WDz.17YWi/l9vqcF6', 'customer', 'Active', '2025-06-07 06:00:00'),
+(12, 'client2', '$2y$10$M891800fSQhN/cIvA7bRD.eHdO0vppdBMNu3WDz.17YWi/l9vqcF6', 'customer', 'Active', NULL),
+(15, 'driver', '$2y$10$VI0UvUzMrExjNSv37E7GXOTzL2caSUCgj4Mt.aS0U1LItLXoaX62C', 'driver', 'Active', NULL),
+(16, 'driver2', '$2y$10$gQNXpo7Zlu22fJz/nRfobe6y2eISpZdsP5TEfG67uo45gqgkUoSuy', 'driver', 'Active', NULL),
+(17, 'test', '$2y$10$3PGkL6yBH5ZMmtnsaSfxVuWiAL5nbT/s8n69WxMB.W.M/TL/gPKNu', 'customer', 'Active', NULL),
+(18, 'helper', '$2y$10$5xzVaTuka17WqMCT/au8I.4T023ag4.RAIoi2uErKPq1sxxVVjQQC', 'helper', 'Active', NULL),
+(19, 'helper2', '$2y$10$5xzVaTuka17WqMCT/au8I.4T023ag4.RAIoi2uErKPq1sxxVVjQQC', 'helper', 'Active', NULL),
+(20, 'driver3', '$2y$10$zO0tBCm4jilKwTZQwzZ3yO96qxJEg64BlbLLJ9SsK5/5hbv5JarJi', 'driver', 'Active', NULL),
+(21, 'driver4', '$2y$10$Ta.PaS1stoiXA2ddUYosheIp0P5Ugd576JTlkVEIurn4Cm6knD30S', 'driver', 'Active', NULL),
+(22, 'driver5', '$2y$10$SLsPFs3oNn/rTCBl.6JOMuxZX/Z.ttkkCLkyO5v7gex6i2yVY9v92', 'driver', 'Active', NULL),
+(23, 'helper3', '$2y$10$10Gc5eQzDi/UYdIyXyZ8KORahuWy1K2ThZR9wsN4DZIsmBIrJ7tty', 'helper', 'Active', NULL),
+(24, 'helper4', '$2y$10$PU3VqlQh6zXPv9wjGThj3OCjgE8PUXawrbwS/V9y7mKhLcDrODY/.', 'helper', 'Active', NULL),
+(25, 'helper5', '$2y$10$ShFaUqVyyMDi37mPX0Oj1ubdzKRELtgs1L5qIkZWspqpJffBycKdi', 'helper', 'Active', NULL),
+(41, 'zenra', '$2y$10$Kq9fnlPQ1xmMi1WwIULTUuSrxkbGNz7gjSNEvjGZpL/wpqnp3H3yi', 'customer', 'Active', NULL),
+(46, 'rocky211', '$2y$10$ftPFp4hqPV5ZQh9W/iIRZuvMjUqifk8aidxsJ.8DaD/22zJopuRBe', 'customer', 'Active', NULL),
+(48, 'owin', '$2y$10$RVpF.foscWj.7emKsXzAMuCgXJhDLpf8/YQRAgJh0wkO4bMjqp2K2', 'customer', 'Active', NULL),
+(49, 'sample', '$2y$10$I8lxS/O92DFhvzNK7nSsWuzevjT4Ktgz.CpZIftqVajOWlsbb2aia', 'customer', 'Active', '2025-04-24 06:00:00'),
+(60, 'ivy', '$2y$10$vbiyTwYFCeNN1poY/IXV0u8WWMLeCitdRGm0Op2.rGH7udacoEjCW', 'customer', 'Active', NULL),
+(62, 'anya', '$2y$10$.WYnkRiNuhxaIUUwi/Mb4uoZJKIViTYTvwQT5bdWQxnPGm0VpFBZG', 'customer', 'Active', NULL);
 
 --
 -- Indexes for dumped tables
@@ -588,7 +610,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `account_requests`
 --
 ALTER TABLE `account_requests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `admins`
@@ -600,13 +622,13 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `customer_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `customer_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `deliveries`
 --
 ALTER TABLE `deliveries`
-  MODIFY `delivery_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `delivery_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `drivers`
@@ -630,7 +652,7 @@ ALTER TABLE `helper_payroll`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `payroll`
@@ -648,7 +670,7 @@ ALTER TABLE `payroll_settings`
 -- AUTO_INCREMENT for table `schedules`
 --
 ALTER TABLE `schedules`
-  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `trucks`
@@ -660,7 +682,7 @@ ALTER TABLE `trucks`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
 
 --
 -- Constraints for dumped tables

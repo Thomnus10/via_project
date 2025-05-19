@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id']) && isset($
         $_SESSION['error_message'] = "Only customer accounts can have their status updated.";
     }
     $verifyQuery->close();
-    header("Location: users.php");
+    header("Location: user_management.php");
     exit();
 }
 
