@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 24, 2025 at 12:40 PM
+-- Generation Time: May 24, 2025 at 07:37 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -152,13 +152,15 @@ INSERT INTO `deliveries` (`delivery_id`, `schedule_id`, `delivery_status`, `deli
 (30, 29, 'Received', '2025-05-04 06:00:00', '2025-05-04 10:05:00'),
 (31, 30, 'Received', '2025-05-05 08:00:00', '2025-05-05 12:30:00'),
 (32, 32, 'Received', '2025-05-01 03:19:35', NULL),
-(33, 33, 'Accepted', '2025-05-24 15:08:03', NULL),
-(34, 34, 'Pending', '2025-05-24 17:50:42', NULL),
-(35, 35, 'Pending', '2025-05-24 17:57:01', NULL),
+(33, 33, 'Completed', '2025-05-24 21:46:32', NULL),
+(34, 34, 'Received', '2025-05-24 20:30:13', '2025-05-25 01:19:19'),
+(35, 35, 'Received', '2025-05-24 20:30:24', '2025-05-25 01:19:34'),
 (36, 36, 'Pending', '2025-05-24 17:57:44', NULL),
 (37, 36, 'Cancelled', '2025-05-24 17:57:54', NULL),
 (38, 37, 'Pending', '2025-05-24 18:04:18', NULL),
-(39, 37, 'Cancelled', '2025-05-24 18:04:25', NULL);
+(39, 37, 'Cancelled', '2025-05-24 18:04:25', NULL),
+(40, 38, 'Pending', '2025-05-25 01:25:57', NULL),
+(41, 39, 'Pending', '2025-05-25 01:28:37', NULL);
 
 -- --------------------------------------------------------
 
@@ -298,11 +300,13 @@ INSERT INTO `payments` (`payment_id`, `schedule_id`, `total_amount`, `status`, `
 (30, 29, 17500.00, 'Paid', '2025-05-04 05:30:00'),
 (31, 30, 40000.00, 'Paid', '2025-05-05 07:30:00'),
 (32, 32, 20000.00, 'Paid', '2025-05-01 03:46:07'),
-(33, 33, 20000.00, 'Pending', '2025-05-24 14:43:14'),
+(33, 33, 20000.00, 'Paid', '2025-05-24 21:45:21'),
 (34, 34, 25000.00, 'Pending', '2025-05-24 17:50:42'),
 (35, 35, 15000.00, 'Pending', '2025-05-24 17:57:01'),
 (36, 36, 10000.00, 'Cancelled', '2025-05-24 17:57:44'),
-(37, 37, 25000.00, 'Cancelled', '2025-05-24 18:04:18');
+(37, 37, 25000.00, 'Cancelled', '2025-05-24 18:04:18'),
+(38, 38, 25000.00, 'Pending', '2025-05-25 01:25:57'),
+(39, 39, 20000.00, 'Pending', '2025-05-25 01:28:37');
 
 -- --------------------------------------------------------
 
@@ -435,7 +439,9 @@ INSERT INTO `schedules` (`schedule_id`, `start_time`, `end_time`, `destination`,
 (34, '2025-05-24 06:00:00', '2025-05-24 18:00:00', 'doon', 'dito ', 2, 1, 2, 2, 56.00),
 (35, '2025-05-24 06:00:00', '2025-05-24 18:00:00', 'saan', 'dito ', 3, 1, 3, 3, 40.00),
 (36, '2025-06-07 06:00:00', '2025-06-07 18:00:00', 'fafafafaf', 'afafaf', 4, 1, 4, 4, 20.00),
-(37, '2025-06-06 06:00:00', '2025-06-06 18:00:00', 'last test', 'test last', 5, 1, 5, 5, 60.00);
+(37, '2025-06-06 06:00:00', '2025-06-06 18:00:00', 'last test', 'test last', 5, 1, 5, 5, 60.00),
+(38, '2025-05-28 06:00:00', '2025-05-28 18:00:00', 'book na sana', 'sana ma book', 1, 1, 1, 1, 58.00),
+(39, '2025-05-28 06:00:00', '2025-05-28 18:00:00', 'last na sana', 'sana last n', 2, 1, 2, 2, 50.00);
 
 -- --------------------------------------------------------
 
@@ -459,7 +465,7 @@ CREATE TABLE `trucks` (
 INSERT INTO `trucks` (`truck_id`, `truck_no`, `truck_type`, `status`, `driver_id`, `helper_id`) VALUES
 (1, 'TRK-2024-01', '10 wheelers', 'Booked', 1, 1),
 (2, 'TRK-2024-02', '12 wheelers', 'Booked', 2, 2),
-(3, 'TRK-2024-03', '8 wheelers', 'Booked', 3, 3),
+(3, 'TRK-2024-03', '8 wheelers', 'Available', 3, 3),
 (4, 'TRK-2024-04', '10 wheelers', 'Booked', 4, 4),
 (5, 'TRK-2024-05', '6 wheelers', 'Booked', 5, 5);
 
@@ -483,13 +489,13 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `username`, `password`, `role`, `account_status`, `last_activity`) VALUES
-(4, 'admin', '$2y$10$20ETT6CiIF7MZkCQEj71c.g0QPMoyV5Fs.KTF8SgfTEL2zaZfVxhS', 'admin', 'Active', NULL),
-(11, 'client', '$2y$10$M891800fSQhN/cIvA7bRD.eHdO0vppdBMNu3WDz.17YWi/l9vqcF6', 'customer', 'Active', '2025-06-07 06:00:00'),
+(4, 'admin', '$2y$10$20ETT6CiIF7MZkCQEj71c.g0QPMoyV5Fs.KTF8SgfTEL2zaZfVxhS', 'admin', 'Active', '2025-05-25 01:28:45'),
+(11, 'client', '$2y$10$M891800fSQhN/cIvA7bRD.eHdO0vppdBMNu3WDz.17YWi/l9vqcF6', 'customer', 'Active', '2025-05-25 01:28:37'),
 (12, 'client2', '$2y$10$M891800fSQhN/cIvA7bRD.eHdO0vppdBMNu3WDz.17YWi/l9vqcF6', 'customer', 'Active', NULL),
-(15, 'driver', '$2y$10$VI0UvUzMrExjNSv37E7GXOTzL2caSUCgj4Mt.aS0U1LItLXoaX62C', 'driver', 'Active', NULL),
+(15, 'driver', '$2y$10$VI0UvUzMrExjNSv37E7GXOTzL2caSUCgj4Mt.aS0U1LItLXoaX62C', 'driver', 'Active', '2025-05-24 20:29:33'),
 (16, 'driver2', '$2y$10$gQNXpo7Zlu22fJz/nRfobe6y2eISpZdsP5TEfG67uo45gqgkUoSuy', 'driver', 'Active', NULL),
 (17, 'test', '$2y$10$3PGkL6yBH5ZMmtnsaSfxVuWiAL5nbT/s8n69WxMB.W.M/TL/gPKNu', 'customer', 'Active', NULL),
-(18, 'helper', '$2y$10$5xzVaTuka17WqMCT/au8I.4T023ag4.RAIoi2uErKPq1sxxVVjQQC', 'helper', 'Active', NULL),
+(18, 'helper', '$2y$10$5xzVaTuka17WqMCT/au8I.4T023ag4.RAIoi2uErKPq1sxxVVjQQC', 'helper', 'Active', '2025-05-24 21:45:16'),
 (19, 'helper2', '$2y$10$5xzVaTuka17WqMCT/au8I.4T023ag4.RAIoi2uErKPq1sxxVVjQQC', 'helper', 'Active', NULL),
 (20, 'driver3', '$2y$10$zO0tBCm4jilKwTZQwzZ3yO96qxJEg64BlbLLJ9SsK5/5hbv5JarJi', 'driver', 'Active', NULL),
 (21, 'driver4', '$2y$10$Ta.PaS1stoiXA2ddUYosheIp0P5Ugd576JTlkVEIurn4Cm6knD30S', 'driver', 'Active', NULL),
@@ -628,7 +634,7 @@ ALTER TABLE `customers`
 -- AUTO_INCREMENT for table `deliveries`
 --
 ALTER TABLE `deliveries`
-  MODIFY `delivery_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `delivery_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `drivers`
@@ -652,7 +658,7 @@ ALTER TABLE `helper_payroll`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `payroll`
@@ -670,7 +676,7 @@ ALTER TABLE `payroll_settings`
 -- AUTO_INCREMENT for table `schedules`
 --
 ALTER TABLE `schedules`
-  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `trucks`
