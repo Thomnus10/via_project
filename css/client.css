@@ -1,0 +1,253 @@
+body {
+    font-family: 'Bruno Ace', sans-serif !important;
+    background-color: #f8f9fa;
+    color: #364C84;
+    transition: margin-left 0.3s ease-in-out;
+    padding-top: 56px;
+}
+
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #364C84;
+    z-index: 1040;
+}
+
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background: linear-gradient(180deg, #364C84, #4A5C9B);
+    position: fixed;
+    top: 56px;
+    left: 0;
+    padding: 20px;
+    color: white;
+    transition: width 0.3s ease-in-out;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    z-index: 1030;
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.toggle-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.sidebar.collapsed .toggle-btn {
+    transform: rotate(180deg);
+}
+
+.sidebar-header span {
+    transition: opacity 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+}
+
+.sidebar.collapsed .sidebar-header span {
+    opacity: 0;
+    margin-left: -20px;
+}
+
+.nav-link {
+    color: white;
+    font-weight: 500;
+    padding: 12px 15px;
+    transition: 0.3s;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    white-space: nowrap;
+}
+
+.nav-link i {
+    font-size: 1.4rem;
+    min-width: 10px;
+    text-align: center;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #FFD700 !important;
+}
+
+.nav-link.active {
+    background-color: #2F3E6E;
+}
+
+.sidebar.collapsed .nav-link span {
+    opacity: 0;
+    width: 0;
+}
+
+.sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    transition: margin-left 0.3s;
+}
+
+.sidebar.collapsed+.main-content {
+    margin-left: 70px;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 70px;
+        padding: 10px;
+    }
+    .sidebar-header span {
+        display: none;
+    }
+    .main-content {
+        margin-left: 70px;
+    }
+    .nav-link {
+        justify-content: center;
+        padding: 10px;
+    }
+    .nav-link span {
+        display: none;
+    }
+}
+
+.fixed-header {
+    position: relative;
+    width: 100%;
+    overflow: auto;
+    max-height: 75vh;
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    background: white;
+}
+
+.fixed-header table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.fixed-header th {
+    background-color: #364C84;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.fixed-header td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.fixed-header tr:hover {
+    background-color: #f5f7ff;
+}
+
+.no-schedules {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+}
+
+.profile-card {
+    border-radius: 15px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info-item {
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.profile-info-item:hover {
+    background-color: #e9ecef;
+    transform: translateY(-2px);
+}
+
+.info-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 250;
+}
+
+.info-value {
+    font-size: 1.1rem;
+    color: #364C84;
+    font-weight: 300;
+    margin-top: 5px;
+}
+
+.modal-content-profile {
+    border-radius: 15px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+.form-control {
+    border-radius: 8px;
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+}
+
+.form-control:focus {
+    border-color: #364C84;
+    box-shadow: 0 0 0 0.25rem rgba(54, 76, 132, 0.25);
+}
+
+.btn-primary {
+    background-color: #364C84;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+}
+
+.btn-primary:hover {
+    background-color: #2F3E6E;
+}
+
+.btn-secondary {
+    border-radius: 8px;
+    padding: 10px 20px;
+}
+
+.cancel-btn {
+    padding: 5px 10px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.cancel-btn:hover {
+    background-color: #c82333;
+}

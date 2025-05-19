@@ -1,27 +1,46 @@
 <?php
 session_start();
-include 'dbcon.php'; // database connection
+include 'dbcon.php';
+
+// Generate CSRF token for forms
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST["username"]);
     $password = $_POST["password"];
 
-    // Query the user including their role
-    $stmt = $con->prepare("SELECT user_id, password, role FROM users WHERE username = ?");
+    $stmt = $con->prepare("SELECT user_id, password, role, account_status FROM users WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
-        $stmt->bind_result($userID, $hashed_password, $role);
+        $stmt->bind_result($userID, $hashed_password, $role, $account_status);
         $stmt->fetch();
 
+        if ($account_status !== 'Active') {
+            echo "<script>
+                    alert('Your account is " . strtolower($account_status) . ". Please contact support.');
+                    window.history.back();
+                  </script>";
+            $stmt->close();
+            $con->close();
+            exit();
+        }
+
         if (password_verify($password, $hashed_password)) {
-            session_regenerate_id(true); // Prevent session fixation
+            $updateActivity = $con->prepare("UPDATE users SET last_activity = NOW() WHERE user_id = ?");
+            $updateActivity->bind_param("i", $userID);
+            $updateActivity->execute();
+            $updateActivity->close();
+
+            session_regenerate_id(true);
             $_SESSION["user_id"] = $userID;
             $_SESSION["role"] = $role;
+            $_SESSION["account_status"] = $account_status;
 
-            // Redirect based on role
             switch ($role) {
                 case 'admin':
                     $redirect = 'admin/dashboard.php';
@@ -36,11 +55,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $redirect = 'helper/schedules.php';
                     break;
                 default:
-                    // Optional: handle unexpected role
                     echo "<script>
                             alert('Unknown role. Contact admin.');
                             window.history.back();
                           </script>";
+                    $stmt->close();
+                    $con->close();
                     exit();
             }
 
@@ -67,11 +87,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
-
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Login - Joredane Trucking Services</title>
@@ -85,9 +102,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     </style>
 </head>
-
 <body>
-
     <div class="container vh-100 d-flex justify-content-center align-items-center">
         <div class="row w-100 justify-content-center">
             <div class="col-md-8 col-lg-6">
@@ -96,34 +111,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         JOREDANE TRUCKING SERVICES
                     </h2>
                     <h3 class="text-center mb-4">LOG-IN</h3>
-
                     <div class="mb-3 row align-items-center">
                         <label for="username" class="col-sm-4 col-form-label text-end fs-5">Username:</label>
                         <div class="col-sm-8">
                             <input type="text" class="form-control rounded-pill input-shadow" id="username" name="username" required>
                         </div>
                     </div>
-
                     <div class="mb-4 row align-items-center">
                         <label for="password" class="col-sm-4 col-form-label text-end fs-5">Password:</label>
                         <div class="col-sm-8">
                             <input type="password" class="form-control rounded-pill input-shadow" id="password" name="password" required>
                         </div>
                     </div>
-
                     <div class="d-flex justify-content-end">
                         <button type="submit" class="btn btn-outline-primary rounded-pill mx-2 input-shadow">Log-in</button>
                     </div>
                     <p class="text-center mt-3">
                         Don't have an account? <a href="request_account.php">Request here</a>
                     </p>
-
                 </form>
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>
