@@ -23,7 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $booking = $verifyQuery->get_result()->fetch_assoc();
     
     if (!$booking) {
-        header("Location: ../booking.php?error=unauthorized");
+        $_SESSION['error_message'] = "Unauthorized action";
+        header("Location: ../booking.php");
         exit();
     }
     
@@ -32,43 +33,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $start_time = new DateTime($booking['start_time']);
     
     if ($start_time > $now) {
-        // Booking is in the future - can be cancelled
+        // Start transaction
+        $con->begin_transaction();
         
-        // Update delivery status to Cancelled
-        $updateDelivery = $con->prepare("
-            INSERT INTO deliveries (schedule_id, delivery_status, delivery_datetime)
-            VALUES (?, 'Cancelled', NOW())
-        ");
-        $updateDelivery->bind_param("i", $schedule_id);
-        $updateDelivery->execute();
-        
-        // Refund payment if already paid
-        $paymentQuery = $con->prepare("
-            SELECT payment_id, status, total_amount 
-            FROM payments  
-            WHERE schedule_id = ? 
-            ORDER BY payment_id DESC 
-            LIMIT 1
-        ");
-        $paymentQuery->bind_param("i", $schedule_id);
-        $paymentQuery->execute();
-        $paymentResult = $paymentQuery->get_result()->fetch_assoc();
-        
-        if ($paymentResult && $paymentResult['status'] === 'Paid') {
-            // Create a refund record (you might want to create a refunds table)
-            $refundPayment = $con->prepare("
-                UPDATE payments 
-                SET status = 'Refunded' 
-                WHERE payment_id = ?
+        try {
+            // Update delivery status to Cancelled
+            $updateDelivery = $con->prepare("
+                INSERT INTO deliveries (schedule_id, delivery_status, delivery_datetime)
+                VALUES (?, 'Cancelled', NOW())
             ");
-            $refundPayment->bind_param("i", $paymentResult['payment_id']);
-            $refundPayment->execute();
+            $updateDelivery->bind_param("i", $schedule_id);
+            $updateDelivery->execute();
+            
+            // Update payment status to Cancelled
+            $paymentQuery = $con->prepare("
+                SELECT payment_id, status 
+                FROM payments  
+                WHERE schedule_id = ? 
+                ORDER BY payment_id DESC 
+                LIMIT 1
+            ");
+            $paymentQuery->bind_param("i", $schedule_id);
+            $paymentQuery->execute();
+            $paymentResult = $paymentQuery->get_result()->fetch_assoc();
+            
+            if ($paymentResult) {
+                $updatePayment = $con->prepare("
+                    UPDATE payments 
+                    SET status = 'Cancelled' 
+                    WHERE payment_id = ?
+                ");
+                $updatePayment->bind_param("i", $paymentResult['payment_id']);
+                $updatePayment->execute();
+            }
+            
+            // Commit transaction
+            $con->commit();
+            $_SESSION['confirmation_message'] = "Booking cancelled successfully";
+            header("Location: ../booking.php");
+        } catch (Exception $e) {
+            $con->rollback();
+            $_SESSION['error_message'] = "Cancellation failed: " . $e->getMessage();
+            header("Location: ../booking.php");
         }
-        
-        header("Location: ../booking.php?success=cancelled");
     } else {
-        header("Location: ../booking.php?error=cannot_cancel_past");
+        $_SESSION['error_message'] = "Cannot cancel past bookings";
+        header("Location: ../booking.php");
     }
 } else {
     header("Location: ../booking.php");
 }
+?>

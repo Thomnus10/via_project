@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save Changes</button>
-                <a href="../users.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Cancel</a>
+                <a href="../user_management.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Cancel</a>
             </div>
         </form>
     </div>
